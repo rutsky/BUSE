@@ -50,6 +50,15 @@ u_int64_t ntohll(u_int64_t a) {
 #endif
 #define htonll ntohll
 
+// Debug message
+#ifdef NDEBUG
+#define debug_print( ... )
+#else
+#define debug_print(fmt, ...) \
+    do { fprintf(stderr, "[DEBUG] %s:%d:%s(): " fmt, __FILE__, \
+        __LINE__, __func__, __VA_ARGS__); } while (0)
+#endif
+
 static int read_all(int fd, char* buf, size_t count)
 {
   int bytes_read;
@@ -164,7 +173,7 @@ int buse_main(const char* dev_file, const struct buse_operations *aop, void *use
        * and writes.
        */
     case NBD_CMD_READ:
-      fprintf(stderr, "Request for read of size %d\n", len);
+      debug_print("Request for read of size %d\n", len);
       /* Fill with zero in case actual read is not implemented */
       chunk = malloc(len);
       if (aop->read) {
@@ -179,7 +188,7 @@ int buse_main(const char* dev_file, const struct buse_operations *aop, void *use
       free(chunk);
       break;
     case NBD_CMD_WRITE:
-      fprintf(stderr, "Request for write of size %d\n", len);
+      debug_print("Request for write of size %d\n", len);
       chunk = malloc(len);
       read_all(sk, chunk, len);
       if (aop->write) {
